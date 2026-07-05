@@ -1,0 +1,86 @@
+// Prisma schema for Vendor Onboarding Automation Platform
+// Using SQLite for local development
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Vendor {
+  id                 String   @id @default(cuid())
+  companyName        String
+  legalName          String
+  country            String
+  registrationNumber String
+  taxId              String
+  taxType            String
+  email              String
+  phone              String
+  address            String
+  bankAccountName    String
+  bankAccountNumber  String
+  ifscSwift          String
+  website            String?
+  status             String   @default("PENDING") // PENDING, APPROVED, REJECTED, PROCESSING
+  riskScore          Int      @default(0)
+  decision           String?
+  reasoning          String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  documents      Document[]
+  validationRuns ValidationRun[]
+  auditLogs      AuditLog[]
+}
+
+model Document {
+  id            String   @id @default(cuid())
+  vendorId      String
+  type          String   // GST_CERTIFICATE, CERTIFICATE_OF_INCORPORATION, CANCELLED_CHEQUE, PAN_CARD
+  fileName      String
+  filePath      String
+  mimeType      String
+  extractedText String?
+  createdAt     DateTime @default(now())
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+}
+
+model ValidationRun {
+  id          String    @id @default(cuid())
+  vendorId    String
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  status      String    @default("RUNNING") // RUNNING, COMPLETED, FAILED
+
+  vendor Vendor           @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  steps  ValidationStep[]
+}
+
+model ValidationStep {
+  id          String   @id @default(cuid())
+  runId       String
+  stepName    String
+  status      String   @default("PENDING") // PENDING, RUNNING, PASSED, FAILED, WARNING, SKIPPED
+  message     String?
+  details     String?  // JSON string for structured details
+  duration    Int?     // milliseconds
+  stepOrder   Int
+  timestamp   DateTime @default(now())
+
+  run ValidationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  vendorId  String
+  action    String
+  details   String?
+  timestamp DateTime @default(now())
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+}
