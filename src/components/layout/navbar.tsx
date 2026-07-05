@@ -46,8 +46,8 @@ export function Navbar() {
           <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 group-hover:bg-indigo-500/15 transition-colors">
             <Sparkles className="h-4 w-4" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-foreground">
-            Ven<span className="text-primary">check</span>
+          <span className="text-xl font-extrabold tracking-tight text-foreground">
+            Ven<span className="text-indigo-500">check</span>
           </span>
         </Link>
 

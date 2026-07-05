@@ -222,19 +222,19 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen py-16 px-4 bg-muted/10">
+    <div className="min-h-screen py-16 px-4 bg-gradient-to-br from-background to-muted/20">
       <div className="mx-auto max-w-5xl space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-card-foreground">
+            <h1 className="text-xl font-extrabold tracking-tight text-card-foreground">
               Procurement Center
             </h1>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-muted-foreground text-xs font-medium">
               Manage external partner registrations, validation reviews, and audit trails.
             </p>
           </div>
-          <Button asChild size="sm" className="font-semibold">
+          <Button asChild size="sm" className="font-semibold shadow-sm hover:shadow transition-all">
             <Link href="/onboarding">
               <Building2 className="h-4 w-4 shrink-0 mr-1.5" />
               Register Vendor
@@ -245,30 +245,34 @@ export default function DashboardPage() {
         {/* Stats Grid */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {statCards.map((card, i) => (
-            <Card key={card.key} className="border shadow-none bg-card transition-all">
-              <CardContent className="p-4 flex flex-col justify-between h-24">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                    {card.label}
-                  </span>
-                  <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center shadow-none", card.bg)}>
-                    <card.icon className={cn("h-4 w-4", card.color)} />
-                  </div>
+            <motion.div
+              key={card.key}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.04 }}
+              className="group rounded-xl border border-border/70 bg-card p-4 flex flex-col justify-between h-24 hover:border-primary/20 hover:shadow-sm transition-all duration-200"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  {card.label}
+                </span>
+                <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center transition-colors group-hover:scale-105 duration-200", card.bg)}>
+                  <card.icon className={cn("h-4 w-4", card.color)} />
                 </div>
-                <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-2xl font-bold text-card-foreground leading-none">
-                    {loading ? (
-                      <Skeleton className="h-7 w-12" />
-                    ) : (
-                      <AnimatedCounter value={stats ? stats[card.key] : 0} />
-                    )}
-                  </span>
-                  {card.key === "avgRiskScore" && !loading && (
-                    <span className="text-xs text-muted-foreground">/100</span>
+              </div>
+              <div className="flex items-baseline gap-1 mt-2">
+                <span className="text-2xl font-extrabold text-card-foreground leading-none tracking-tight">
+                  {loading ? (
+                    <Skeleton className="h-7 w-12" />
+                  ) : (
+                    <AnimatedCounter value={stats ? stats[card.key] : 0} />
                   )}
-                </div>
-              </CardContent>
-            </Card>
+                </span>
+                {card.key === "avgRiskScore" && !loading && (
+                  <span className="text-xs text-muted-foreground">/100</span>
+                )}
+              </div>
+            </motion.div>
           ))}
         </div>
 
@@ -361,12 +365,24 @@ export default function DashboardPage() {
                       const getMinimalStatusIcon = (status: string) => {
                         const s = status.toLowerCase();
                         if (s === "approved") {
-                          return <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">🟢 Approved</span>;
+                          return (
+                            <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-500 ring-1 ring-inset ring-emerald-500/20 uppercase tracking-wide">
+                              Approved
+                            </span>
+                          );
                         }
                         if (s === "rejected") {
-                          return <span className="inline-flex items-center gap-1.5 text-red-600 dark:text-red-400 font-semibold">🔴 Rejected</span>;
+                          return (
+                            <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2.5 py-0.5 text-[10px] font-bold text-rose-500 ring-1 ring-inset ring-rose-500/20 uppercase tracking-wide">
+                              Rejected
+                            </span>
+                          );
                         }
-                        return <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-semibold">🟡 Pending</span>;
+                        return (
+                          <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold text-amber-500 ring-1 ring-inset ring-amber-500/20 uppercase tracking-wide">
+                            Pending
+                          </span>
+                        );
                       };
 
                       return (

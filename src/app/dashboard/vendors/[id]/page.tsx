@@ -523,16 +523,11 @@ export default function VendorDetailPage({
                 </div>
                 <div className="flex items-center gap-3">
                   <Badge
-                    variant={
-                      getStatusColor(vendor.decision || vendor.status) as
-                        | "default"
-                        | "secondary"
-                        | "destructive"
-                        | "outline"
-                        | "success"
-                        | "warning"
-                    }
-                    className="text-sm px-3 py-1"
+                    variant="outline"
+                    className={cn(
+                      "text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                      getStatusColor(vendor.decision || vendor.status)
+                    )}
                   >
                     {(vendor.decision || vendor.status)
                       .replace(/_/g, " ")
@@ -784,11 +779,11 @@ export default function VendorDetailPage({
                           <div
                             className={cn(
                               "relative rounded-xl border p-4 ml-12 cursor-pointer transition-all hover:shadow-sm",
-                              step.status === "passed" && "border-emerald-500/20 bg-emerald-500/5",
-                              step.status === "failed" && "border-red-500/20 bg-red-500/5",
-                              step.status === "warning" && "border-amber-500/20 bg-amber-500/5",
-                              step.status === "running" && "border-blue-500/20 bg-blue-500/5",
-                              !["passed", "failed", "warning", "running"].includes(step.status) && "border-border"
+                              step.status.toLowerCase() === "passed" && "border-emerald-500/20 bg-emerald-500/5",
+                              step.status.toLowerCase() === "failed" && "border-red-500/20 bg-red-500/5",
+                              step.status.toLowerCase() === "warning" && "border-amber-500/20 bg-amber-500/5",
+                              step.status.toLowerCase() === "running" && "border-blue-500/20 bg-blue-500/5",
+                              !["passed", "failed", "warning", "running"].includes(step.status.toLowerCase()) && "border-border"
                             )}
                             onClick={() => step.details && toggleStep(step.name)}
                           >
