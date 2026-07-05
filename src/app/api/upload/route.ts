@@ -55,9 +55,13 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), "public", "uploads");
-    await mkdir(uploadsDir, { recursive: true });
+    // On serverless environments (like Vercel), use the writable OS temporary directory /tmp
+    const isServerless = process.env.VERCEL || process.env.NODE_ENV === "production";
+    const uploadsDir = isServerless ? "/tmp" : join(process.cwd(), "public", "uploads");
+    
+    if (!isServerless) {
+      await mkdir(uploadsDir, { recursive: true });
+    }
 
     // Generate unique filename
     const extension = file.name.split(".").pop() || "bin";
