@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
   Building2,
@@ -326,301 +326,395 @@ export default function OnboardingPage() {
     { num: 3, label: "Documents" },
   ];
 
+  const [direction, setDirection] = useState(1);
+
+  const handleNextStepWithDirection = () => {
+    setDirection(1);
+    handleNextStep();
+  };
+
+  const handlePrevStepWithDirection = () => {
+    setDirection(-1);
+    handlePrevStep();
+  };
+
+  // Slide transitions variants
+  const slideVariants = {
+    enter: (dir: number) => ({
+      x: dir > 0 ? 40 : -40,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        x: { type: "spring", stiffness: 300, damping: 30 },
+        opacity: { duration: 0.2 },
+      },
+    },
+    exit: (dir: number) => ({
+      x: dir < 0 ? 40 : -40,
+      opacity: 0,
+      transition: {
+        x: { type: "spring", stiffness: 300, damping: 30 },
+        opacity: { duration: 0.2 },
+      },
+    }),
+  };
+
   return (
-    <div className="min-h-screen py-16 px-4 bg-muted/10">
+    <div className="min-h-screen py-16 px-4 bg-gradient-to-b from-background via-background to-muted/20">
       <div className="mx-auto max-w-2xl">
         {/* Header */}
-        <div className="mb-10 text-center space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-card-foreground">
-            Vendor Intake Portal
+        <div className="mb-10 text-center space-y-2">
+          <h1 className="text-3xl font-extrabold tracking-tight">
+            <span className="gradient-text-animated">Vendor Intake Portal</span>
           </h1>
-          <p className="text-muted-foreground text-xs">
-            Submit your profile credentials and attachments for automated audit checks.
+          <p className="text-muted-foreground text-xs max-w-sm mx-auto">
+            Submit your profile credentials and attachments for real-time automated validation checks.
           </p>
         </div>
 
         {/* Wizard Progress Line */}
-        <div className="mb-8 flex items-center justify-between relative px-2">
-          <div className="absolute left-6 right-6 top-[15px] h-0.5 bg-border -z-10" />
+        <div className="mb-10 flex items-center justify-between relative px-4">
+          <div className="absolute left-8 right-8 top-[15px] h-0.5 bg-muted -z-10" />
+          {/* Animated active bar */}
+          <div 
+            className="absolute left-8 top-[15px] h-0.5 bg-primary -z-10 transition-all duration-500 ease-out" 
+            style={{ width: `${((step - 1) / (steps.length - 1)) * 82}%` }}
+          />
           {steps.map((s) => (
-            <div key={s.num} className="flex flex-col items-center gap-1 bg-transparent">
+            <div key={s.num} className="flex flex-col items-center gap-1.5 bg-transparent">
               <div className={cn(
-                "w-8 h-8 rounded-full border-2 flex items-center justify-center font-semibold text-xs transition-colors",
-                step === s.num && "bg-primary text-primary-foreground border-primary",
+                "w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-xs transition-all duration-300",
+                step === s.num && "bg-primary text-primary-foreground border-primary scale-110 shadow-lg shadow-primary/25",
                 step > s.num && "bg-emerald-500 text-white border-emerald-500",
-                step < s.num && "bg-card text-muted-foreground border-border"
+                step < s.num && "bg-card text-muted-foreground border-muted-foreground/20"
               )}>
                 {step > s.num ? "✓" : s.num}
               </div>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{s.label}</span>
+              <span className={cn(
+                "text-[9px] font-bold uppercase tracking-wider transition-colors duration-300",
+                step === s.num ? "text-primary font-extrabold" : "text-muted-foreground"
+              )}>
+                {s.label}
+              </span>
             </div>
           ))}
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* STEP 1: COMPANY PROFILE */}
-          {step === 1 && (
-            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-              <Card className="border shadow-sm">
-                <CardHeader className="pb-3 border-b">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-indigo-500" />
-                    Organization Profile
-                  </CardTitle>
-                  <CardDescription className="text-xs">Provide official company and registration parameters.</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-4 grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="companyName" className="text-xs">Company Name</Label>
-                    <Input
-                      id="companyName"
-                      placeholder="Acme Inc"
-                      value={formData.companyName}
-                      onChange={(e) => updateField("companyName", e.target.value)}
-                      className={errors.companyName ? "border-destructive text-xs" : "text-xs"}
-                    />
-                    {errors.companyName && <p className="text-[10px] text-destructive">{errors.companyName}</p>}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="legalName" className="text-xs">Legal Entity Name</Label>
-                    <Input
-                      id="legalName"
-                      placeholder="Acme Corporation Pvt Ltd"
-                      value={formData.legalName}
-                      onChange={(e) => updateField("legalName", e.target.value)}
-                      className={errors.legalName ? "border-destructive text-xs" : "text-xs"}
-                    />
-                    {errors.legalName && <p className="text-[10px] text-destructive">{errors.legalName}</p>}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="country" className="text-xs">Country</Label>
-                    <Select value={formData.country} onValueChange={(val) => updateField("country", val)}>
-                      <SelectTrigger className={errors.country ? "border-destructive text-xs font-medium" : "text-xs font-medium"}>
-                        <SelectValue placeholder="Select Country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {countries.map((c) => (
-                          <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.country && <p className="text-[10px] text-destructive">{errors.country}</p>}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="registrationNumber" className="text-xs">Registration Number (CIN)</Label>
-                    <Input
-                      id="registrationNumber"
-                      placeholder="Registration Number"
-                      value={formData.registrationNumber}
-                      onChange={(e) => updateField("registrationNumber", e.target.value)}
-                      className={errors.registrationNumber ? "border-destructive text-xs" : "text-xs"}
-                    />
-                    {errors.registrationNumber && <p className="text-[10px] text-destructive">{errors.registrationNumber}</p>}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email" className="text-xs">Business Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <AnimatePresence mode="wait" custom={direction}>
+            {/* STEP 1: COMPANY PROFILE */}
+            {step === 1 && (
+              <motion.div 
+                key="step1"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="space-y-4"
+              >
+                <Card className="glowing-card shadow-lg">
+                  <CardHeader className="pb-3 border-b">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-indigo-500" />
+                      Organization Profile
+                    </CardTitle>
+                    <CardDescription className="text-xs">Provide official company and registration parameters.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-5 grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="companyName" className="text-xs">Company Name</Label>
                       <Input
-                        id="email"
-                        type="email"
-                        placeholder="finance@acme.com"
-                        value={formData.email}
-                        onChange={(e) => updateField("email", e.target.value)}
-                        className={`pl-9 text-xs ${errors.email ? "border-destructive" : ""}`}
+                        id="companyName"
+                        placeholder="Acme Inc"
+                        value={formData.companyName}
+                        onChange={(e) => updateField("companyName", e.target.value)}
+                        className={errors.companyName ? "border-destructive text-xs focus-visible:ring-destructive" : "text-xs"}
                       />
+                      {errors.companyName && <p className="text-[10px] text-destructive">{errors.companyName}</p>}
                     </div>
-                    {errors.email && <p className="text-[10px] text-destructive">{errors.email}</p>}
-                  </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="phone" className="text-xs">Primary Phone</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <div className="space-y-1.5">
+                      <Label htmlFor="legalName" className="text-xs">Legal Entity Name</Label>
                       <Input
-                        id="phone"
-                        placeholder="+91 9876500000"
-                        value={formData.phone}
-                        onChange={(e) => updateField("phone", e.target.value)}
-                        className={`pl-9 text-xs ${errors.phone ? "border-destructive" : ""}`}
+                        id="legalName"
+                        placeholder="Acme Corporation Pvt Ltd"
+                        value={formData.legalName}
+                        onChange={(e) => updateField("legalName", e.target.value)}
+                        className={errors.legalName ? "border-destructive text-xs focus-visible:ring-destructive" : "text-xs"}
                       />
+                      {errors.legalName && <p className="text-[10px] text-destructive">{errors.legalName}</p>}
                     </div>
-                    {errors.phone && <p className="text-[10px] text-destructive">{errors.phone}</p>}
-                  </div>
 
-                  <div className="sm:col-span-2 space-y-1.5">
-                    <Label htmlFor="address" className="text-xs">Registered Address</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                      <textarea
-                        id="address"
-                        placeholder="Full registered address"
-                        value={formData.address}
-                        onChange={(e) => updateField("address", e.target.value)}
-                        rows={2}
-                        className={`flex w-full rounded-lg border bg-background px-3 py-2 pl-9 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:opacity-50 resize-none transition-colors ${errors.address ? "border-destructive" : "border-input"}`}
-                      />
+                    <div className="space-y-1.5">
+                      <Label htmlFor="country" className="text-xs">Country</Label>
+                      <Select value={formData.country} onValueChange={(val) => updateField("country", val)}>
+                        <SelectTrigger className={errors.country ? "border-destructive text-xs font-medium" : "text-xs font-medium"}>
+                          <SelectValue placeholder="Select Country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countries.map((c) => (
+                            <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.country && <p className="text-[10px] text-destructive">{errors.country}</p>}
                     </div>
-                    {errors.address && <p className="text-[10px] text-destructive">{errors.address}</p>}
-                  </div>
 
-                  <div className="sm:col-span-2 space-y-1.5">
-                    <Label htmlFor="website" className="text-xs">Website URL (Optional)</Label>
-                    <div className="relative">
-                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <div className="space-y-1.5">
+                      <Label htmlFor="registrationNumber" className="text-xs">Registration Number (CIN)</Label>
                       <Input
-                        id="website"
-                        placeholder="https://www.acme.com"
-                        value={formData.website}
-                        onChange={(e) => updateField("website", e.target.value)}
-                        className="pl-9 text-xs"
+                        id="registrationNumber"
+                        placeholder="Registration Number"
+                        value={formData.registrationNumber}
+                        onChange={(e) => updateField("registrationNumber", e.target.value)}
+                        className={errors.registrationNumber ? "border-destructive text-xs focus-visible:ring-destructive" : "text-xs"}
                       />
+                      {errors.registrationNumber && <p className="text-[10px] text-destructive">{errors.registrationNumber}</p>}
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
 
-              <div className="flex justify-end pt-2">
-                <Button type="button" onClick={handleNextStep} size="sm" className="px-6 font-semibold">
-                  Continue
-                </Button>
-              </div>
-            </motion.div>
-          )}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="email" className="text-xs">Business Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="finance@acme.com"
+                          value={formData.email}
+                          onChange={(e) => updateField("email", e.target.value)}
+                          className={`pl-9 text-xs ${errors.email ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                        />
+                      </div>
+                      {errors.email && <p className="text-[10px] text-destructive">{errors.email}</p>}
+                    </div>
 
-          {/* STEP 2: BANKING & TAX */}
-          {step === 2 && (
-            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-              <Card className="border shadow-sm">
-                <CardHeader className="pb-3 border-b">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Landmark className="h-4 w-4 text-emerald-500" />
-                    Banking & Tax Information
-                  </CardTitle>
-                  <CardDescription className="text-xs">Setup bank payout destination and tax identification details.</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-4 grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="taxType" className="text-xs">Tax Type</Label>
-                    <Select value={formData.taxType} onValueChange={(val) => updateField("taxType", val)}>
-                      <SelectTrigger className={errors.taxType ? "border-destructive text-xs font-medium" : "text-xs font-medium"}>
-                        <SelectValue placeholder="Select Tax Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {taxTypes.map((t) => (
-                          <SelectItem key={t.value} value={t.value} className="text-xs">{t.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.taxType && <p className="text-[10px] text-destructive">{errors.taxType}</p>}
-                  </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="phone" className="text-xs">Primary Phone</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                        <Input
+                          id="phone"
+                          placeholder="+91 9876500000"
+                          value={formData.phone}
+                          onChange={(e) => updateField("phone", e.target.value)}
+                          className={`pl-9 text-xs ${errors.phone ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                        />
+                      </div>
+                      {errors.phone && <p className="text-[10px] text-destructive">{errors.phone}</p>}
+                    </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="taxId" className="text-xs">Tax ID (GSTIN/PAN)</Label>
-                    <Input
-                      id="taxId"
-                      placeholder="Tax Identification Number"
-                      value={formData.taxId}
-                      onChange={(e) => updateField("taxId", e.target.value)}
-                      className={errors.taxId ? "border-destructive text-xs" : "text-xs"}
-                    />
-                    {errors.taxId && <p className="text-[10px] text-destructive">{errors.taxId}</p>}
-                  </div>
+                    <div className="sm:col-span-2 space-y-1.5">
+                      <Label htmlFor="address" className="text-xs">Registered Address</Label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                        <textarea
+                          id="address"
+                          placeholder="Full registered address"
+                          value={formData.address}
+                          onChange={(e) => updateField("address", e.target.value)}
+                          rows={2}
+                          className={`flex w-full rounded-lg border bg-background px-3 py-2 pl-9 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:opacity-50 resize-none transition-all ${errors.address ? "border-destructive focus-visible:ring-destructive" : "border-input"}`}
+                        />
+                      </div>
+                      {errors.address && <p className="text-[10px] text-destructive">{errors.address}</p>}
+                    </div>
 
-                  <div className="sm:col-span-2 space-y-1.5">
-                    <Label htmlFor="bankAccountName" className="text-xs">Bank Account Holder Name</Label>
-                    <Input
-                      id="bankAccountName"
-                      placeholder="Name on bank account"
-                      value={formData.bankAccountName}
-                      onChange={(e) => updateField("bankAccountName", e.target.value)}
-                      className={errors.bankAccountName ? "border-destructive text-xs" : "text-xs"}
-                    />
-                    {errors.bankAccountName && <p className="text-[10px] text-destructive">{errors.bankAccountName}</p>}
-                  </div>
+                    <div className="sm:col-span-2 space-y-1.5">
+                      <Label htmlFor="website" className="text-xs">Website URL (Optional)</Label>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                        <Input
+                          id="website"
+                          placeholder="https://www.acme.com"
+                          value={formData.website}
+                          onChange={(e) => updateField("website", e.target.value)}
+                          className="pl-9 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="bankAccountNumber" className="text-xs">Account Number</Label>
-                    <Input
-                      id="bankAccountNumber"
-                      placeholder="Bank account number"
-                      value={formData.bankAccountNumber}
-                      onChange={(e) => updateField("bankAccountNumber", e.target.value)}
-                      className={errors.bankAccountNumber ? "border-destructive text-xs" : "text-xs"}
-                    />
-                    {errors.bankAccountNumber && <p className="text-[10px] text-destructive">{errors.bankAccountNumber}</p>}
-                  </div>
+                <div className="flex justify-end pt-2">
+                  <Button 
+                    type="button" 
+                    onClick={handleNextStepWithDirection} 
+                    size="sm" 
+                    className="px-6 font-semibold bg-primary hover:bg-primary/95 text-primary-foreground shadow-md shadow-primary/10 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    Continue
+                  </Button>
+                </div>
+              </motion.div>
+            )}
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="ifscSwift" className="text-xs">IFSC / SWIFT Code</Label>
-                    <Input
-                      id="ifscSwift"
-                      placeholder="Routing Code"
-                      value={formData.ifscSwift}
-                      onChange={(e) => updateField("ifscSwift", e.target.value)}
-                      className={errors.ifscSwift ? "border-destructive text-xs" : "text-xs"}
-                    />
-                    {errors.ifscSwift && <p className="text-[10px] text-destructive">{errors.ifscSwift}</p>}
-                  </div>
-                </CardContent>
-              </Card>
+            {/* STEP 2: BANKING & TAX */}
+            {step === 2 && (
+              <motion.div 
+                key="step2"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="space-y-4"
+              >
+                <Card className="glowing-card shadow-lg">
+                  <CardHeader className="pb-3 border-b">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Landmark className="h-4 w-4 text-emerald-500" />
+                      Banking & Tax Information
+                    </CardTitle>
+                    <CardDescription className="text-xs">Setup bank payout destination and tax identification details.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-5 grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="taxType" className="text-xs">Tax Type</Label>
+                      <Select value={formData.taxType} onValueChange={(val) => updateField("taxType", val)}>
+                        <SelectTrigger className={errors.taxType ? "border-destructive text-xs font-medium" : "text-xs font-medium"}>
+                          <SelectValue placeholder="Select Tax Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {taxTypes.map((t) => (
+                            <SelectItem key={t.value} value={t.value} className="text-xs">{t.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.taxType && <p className="text-[10px] text-destructive">{errors.taxType}</p>}
+                    </div>
 
-              <div className="flex justify-between pt-2">
-                <Button type="button" onClick={handlePrevStep} variant="outline" size="sm" className="px-6 font-semibold">
-                  Back
-                </Button>
-                <Button type="button" onClick={handleNextStep} size="sm" className="px-6 font-semibold">
-                  Continue
-                </Button>
-              </div>
-            </motion.div>
-          )}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="taxId" className="text-xs">Tax ID (GSTIN/PAN)</Label>
+                      <Input
+                        id="taxId"
+                        placeholder="Tax Identification Number"
+                        value={formData.taxId}
+                        onChange={(e) => updateField("taxId", e.target.value)}
+                        className={errors.taxId ? "border-destructive text-xs focus-visible:ring-destructive" : "text-xs"}
+                      />
+                      {errors.taxId && <p className="text-[10px] text-destructive">{errors.taxId}</p>}
+                    </div>
 
-          {/* STEP 3: DOCUMENT UPLOAD */}
-          {step === 3 && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-              <Card className="border shadow-sm">
-                <CardHeader className="pb-3 border-b">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-rose-500" />
-                    Compliance Certificates
-                  </CardTitle>
-                  <CardDescription className="text-xs">Attach registration documents for validation (GST, Cancelled Cheque, PAN, COI).</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <FileUploader files={files} onFilesChange={handleFilesChange} />
-                </CardContent>
-              </Card>
+                    <div className="sm:col-span-2 space-y-1.5">
+                      <Label htmlFor="bankAccountName" className="text-xs">Bank Account Holder Name</Label>
+                      <Input
+                        id="bankAccountName"
+                        placeholder="Name on bank account"
+                        value={formData.bankAccountName}
+                        onChange={(e) => updateField("bankAccountName", e.target.value)}
+                        className={errors.bankAccountName ? "border-destructive text-xs focus-visible:ring-destructive" : "text-xs"}
+                      />
+                      {errors.bankAccountName && <p className="text-[10px] text-destructive">{errors.bankAccountName}</p>}
+                    </div>
 
-              <div className="flex justify-between pt-2">
-                <Button type="button" onClick={handlePrevStep} variant="outline" size="sm" className="px-6 font-semibold">
-                  Back
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={isSubmitting}
-                  className="px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-semibold"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin shrink-0 mr-1.5" />
-                      Submitting Details...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 shrink-0 mr-1.5" />
-                      Submit Verification
-                    </>
-                  )}
-                </Button>
-              </div>
-            </motion.div>
-          )}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="bankAccountNumber" className="text-xs">Account Number</Label>
+                      <Input
+                        id="bankAccountNumber"
+                        placeholder="Bank account number"
+                        value={formData.bankAccountNumber}
+                        onChange={(e) => updateField("bankAccountNumber", e.target.value)}
+                        className={errors.bankAccountNumber ? "border-destructive text-xs focus-visible:ring-destructive" : "text-xs"}
+                      />
+                      {errors.bankAccountNumber && <p className="text-[10px] text-destructive">{errors.bankAccountNumber}</p>}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="ifscSwift" className="text-xs">IFSC / SWIFT Code</Label>
+                      <Input
+                        id="ifscSwift"
+                        placeholder="Routing Code"
+                        value={formData.ifscSwift}
+                        onChange={(e) => updateField("ifscSwift", e.target.value)}
+                        className={errors.ifscSwift ? "border-destructive text-xs focus-visible:ring-destructive" : "text-xs"}
+                      />
+                      {errors.ifscSwift && <p className="text-[10px] text-destructive">{errors.ifscSwift}</p>}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="flex justify-between pt-2">
+                  <Button 
+                    type="button" 
+                    onClick={handlePrevStepWithDirection} 
+                    variant="outline" 
+                    size="sm" 
+                    className="px-6 font-semibold transition-all duration-300 hover:bg-muted"
+                  >
+                    Back
+                  </Button>
+                  <Button 
+                    type="button" 
+                    onClick={handleNextStepWithDirection} 
+                    size="sm" 
+                    className="px-6 font-semibold bg-primary hover:bg-primary/95 text-primary-foreground shadow-md shadow-primary/10 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    Continue
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP 3: DOCUMENT UPLOAD */}
+            {step === 3 && (
+              <motion.div 
+                key="step3"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="space-y-4"
+              >
+                <Card className="glowing-card shadow-lg">
+                  <CardHeader className="pb-3 border-b">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-rose-500" />
+                      Compliance Certificates
+                    </CardTitle>
+                    <CardDescription className="text-xs">Attach registration documents for validation (GST, Cancelled Cheque, PAN, COI).</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-5">
+                    <FileUploader files={files} onFilesChange={handleFilesChange} />
+                  </CardContent>
+                </Card>
+
+                <div className="flex justify-between pt-2">
+                  <Button 
+                    type="button" 
+                    onClick={handlePrevStepWithDirection} 
+                    variant="outline" 
+                    size="sm" 
+                    className="px-6 font-semibold transition-all duration-300 hover:bg-muted"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={isSubmitting}
+                    className="px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold shadow-md shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin shrink-0 mr-1.5" />
+                        Submitting Details...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 shrink-0 mr-1.5" />
+                        Submit Verification
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </form>
       </div>
     </div>

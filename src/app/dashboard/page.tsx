@@ -277,7 +277,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Vendor Table */}
-        <Card className="border shadow-none">
+        <Card className="glowing-card shadow-xl border">
           <CardHeader className="pb-3 border-b">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
