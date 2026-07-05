@@ -43,57 +43,57 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.875rem; /* More rounded premium corners */
 
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --background: #EFEFEF; /* Clean Zamp off-white */
+  --foreground: #121214;
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #121214;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #4f46e5;
+  --popover-foreground: #121214;
+  --primary: #000000; /* Stark black primary buttons */
   --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
-  --destructive: #ef4444;
+  --secondary: #E4E4E4;
+  --secondary-foreground: #121214;
+  --muted: #E4E4E4;
+  --muted-foreground: #606065;
+  --accent: #E4E4E4;
+  --accent-foreground: #121214;
+  --destructive: #E11D48;
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #4f46e5;
-  --success: #10b981;
+  --border: #D2D2D2;
+  --input: #D2D2D2;
+  --ring: #000000;
+  --success: #10B981;
   --success-foreground: #ffffff;
-  --warning: #f59e0b;
+  --warning: #F59E0B;
   --warning-foreground: #ffffff;
 }
 
 .dark {
-  --background: #020617;
-  --foreground: #f8fafc;
-  --card: #0f172a;
-  --card-foreground: #f8fafc;
-  --popover: #0f172a;
-  --popover-foreground: #f8fafc;
-  --primary: #818cf8;
-  --primary-foreground: #020617;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  --destructive: #f87171;
-  --destructive-foreground: #020617;
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #818cf8;
-  --success: #34d399;
-  --success-foreground: #020617;
-  --warning: #fbbf24;
-  --warning-foreground: #020617;
+  --background: #0B0B0C; /* Premium deep dark matte */
+  --foreground: #ECECED;
+  --card: #131315;
+  --card-foreground: #ECECED;
+  --popover: #131315;
+  --popover-foreground: #ECECED;
+  --primary: #ffffff; /* Stark white primary buttons */
+  --primary-foreground: #0B0B0C;
+  --secondary: #1C1C1E;
+  --secondary-foreground: #ECECED;
+  --muted: #1C1C1E;
+  --muted-foreground: #909095;
+  --accent: #1C1C1E;
+  --accent-foreground: #ECECED;
+  --destructive: #F43F5E;
+  --destructive-foreground: #ffffff;
+  --border: #1E1E21;
+  --input: #1E1E21;
+  --ring: #ffffff;
+  --success: #34D399;
+  --success-foreground: #0b0b0c;
+  --warning: #FBBF24;
+  --warning-foreground: #0b0b0c;
 }
 
 @keyframes fade-in {
