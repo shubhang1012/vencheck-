@@ -1,19 +1,4 @@
-// Shim DOMMatrix globally for Node.js environment to prevent pdf-parse failures on serverless hosting platforms
-if (typeof globalThis.DOMMatrix === "undefined") {
-  class MockDOMMatrix {
-    a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
-    constructor(init?: any) {
-      if (Array.isArray(init)) {
-        this.a = init[0]; this.b = init[1]; this.c = init[2]; this.d = init[3]; this.e = init[4]; this.f = init[5];
-      }
-    }
-  }
-  (globalThis as any).DOMMatrix = MockDOMMatrix;
-  (globalThis as any).DOMMatrixReadOnly = MockDOMMatrix;
-}
-
 import { readFile } from "fs/promises";
-import { PDFParse } from "pdf-parse";
 
 /**
  * Extract text from a PDF file buffer
@@ -21,7 +6,22 @@ import { PDFParse } from "pdf-parse";
 export async function extractTextFromPDF(
   filePath: string
 ): Promise<string> {
+  // Shim DOMMatrix globally for Node.js environment to prevent pdf-parse failures on serverless hosting platforms
+  if (typeof globalThis.DOMMatrix === "undefined") {
+    class MockDOMMatrix {
+      a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
+      constructor(init?: any) {
+        if (Array.isArray(init)) {
+          this.a = init[0]; this.b = init[1]; this.c = init[2]; this.d = init[3]; this.e = init[4]; this.f = init[5];
+        }
+      }
+    }
+    (globalThis as any).DOMMatrix = MockDOMMatrix;
+    (globalThis as any).DOMMatrixReadOnly = MockDOMMatrix;
+  }
+
   try {
+    const { PDFParse } = await import("pdf-parse");
     const buffer = await readFile(filePath);
     const parser = new PDFParse({ data: new Uint8Array(buffer) });
     const result = await parser.getText();
