@@ -4,33 +4,65 @@ export const dynamic = "force-dynamic";
 
 export async function GET(): Promise<Response> {
   try {
-    // Count by status
-    const [totalVendors, approvedCount, pendingCount, rejectedCount, processingCount] =
-      await Promise.all([
-        prisma.vendor.count(),
-        prisma.vendor.count({ where: { status: "APPROVED" } }),
-        prisma.vendor.count({ where: { status: "PENDING" } }),
-        prisma.vendor.count({ where: { status: "REJECTED" } }),
-        prisma.vendor.count({ where: { status: "PROCESSING" } }),
-      ]);
+    // Run all database calls in parallel to eliminate sequential round-trip latency
+    const [
+      totalVendors,
+      approvedCount,
+      pendingCount,
+      rejectedCount,
+      processingCount,
+      riskAgg,
+      completedRuns,
+      recentVendors,
+      lowRiskCount,
+      mediumRiskCount,
+      highRiskCount
+    ] = await Promise.all([
+      prisma.vendor.count(),
+      prisma.vendor.count({ where: { status: "APPROVED" } }),
+      prisma.vendor.count({ where: { status: "PENDING" } }),
+      prisma.vendor.count({ where: { status: "REJECTED" } }),
+      prisma.vendor.count({ where: { status: "PROCESSING" } }),
+      prisma.vendor.aggregate({
+        _avg: { riskScore: true },
+      }),
+      prisma.validationRun.findMany({
+        where: {
+          status: "COMPLETED",
+          completedAt: { not: null },
+        },
+        select: {
+          startedAt: true,
+          completedAt: true,
+        },
+      }),
+      prisma.vendor.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        select: {
+          id: true,
+          companyName: true,
+          country: true,
+          status: true,
+          riskScore: true,
+          createdAt: true,
+          _count: {
+            select: { documents: true },
+          },
+        },
+      }),
+      prisma.vendor.count({
+        where: { riskScore: { lte: 20 } },
+      }),
+      prisma.vendor.count({
+        where: { riskScore: { gt: 20, lte: 60 } },
+      }),
+      prisma.vendor.count({
+        where: { riskScore: { gt: 60 } },
+      }),
+    ]);
 
-    // Average risk score
-    const riskAgg = await prisma.vendor.aggregate({
-      _avg: { riskScore: true },
-    });
     const averageRiskScore = Math.round(riskAgg._avg.riskScore ?? 0);
-
-    // Average processing time (from completed validation runs)
-    const completedRuns = await prisma.validationRun.findMany({
-      where: {
-        status: "COMPLETED",
-        completedAt: { not: null },
-      },
-      select: {
-        startedAt: true,
-        completedAt: true,
-      },
-    });
 
     let averageProcessingTime = 0;
     if (completedRuns.length > 0) {
@@ -43,34 +75,10 @@ export async function GET(): Promise<Response> {
       averageProcessingTime = Math.round(totalMs / completedRuns.length);
     }
 
-    // Recent vendors (last 10)
-    const recentVendors = await prisma.vendor.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      select: {
-        id: true,
-        companyName: true,
-        country: true,
-        status: true,
-        riskScore: true,
-        createdAt: true,
-        _count: {
-          select: { documents: true },
-        },
-      },
-    });
-
-    // Risk score distribution
     const riskDistribution = {
-      low: await prisma.vendor.count({
-        where: { riskScore: { lte: 20 } },
-      }),
-      medium: await prisma.vendor.count({
-        where: { riskScore: { gt: 20, lte: 60 } },
-      }),
-      high: await prisma.vendor.count({
-        where: { riskScore: { gt: 60 } },
-      }),
+      low: lowRiskCount,
+      medium: mediumRiskCount,
+      high: highRiskCount,
     };
 
     return Response.json({

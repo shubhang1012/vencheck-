@@ -20,10 +20,14 @@ import { calculateRiskScore } from "./rules/risk-scoring";
 import { runAIReview } from "./rules/ai-review";
 
 /**
- * Random delay to make each validation step feel realistic
+ * Random delay to make each validation step feel realistic (fast in production)
  */
 function randomDelay(): number {
-  return Math.floor(Math.random() * 500) + 300; // 300-800ms
+  const isProd = process.env.NODE_ENV === "production" || process.env.VERCEL;
+  if (isProd) {
+    return Math.floor(Math.random() * 20) + 10; // 10-30ms for production speed
+  }
+  return Math.floor(Math.random() * 500) + 300; // 300-800ms locally
 }
 
 /**
