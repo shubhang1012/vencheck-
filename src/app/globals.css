@@ -177,9 +177,9 @@
 
   body::before {
     content: "";
-    position: absolute;
-    top: -10%;
-    left: 5%;
+    position: fixed;
+    top: -100px;
+    left: -100px;
     width: 500px;
     height: 500px;
     border-radius: 50%;
@@ -191,9 +191,9 @@
 
   body::after {
     content: "";
-    position: absolute;
-    bottom: -10%;
-    right: 5%;
+    position: fixed;
+    bottom: -150px;
+    right: -150px;
     width: 600px;
     height: 600px;
     border-radius: 50%;
