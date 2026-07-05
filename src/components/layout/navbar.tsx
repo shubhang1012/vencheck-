@@ -34,10 +34,10 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-300",
+        "sticky top-0 z-50 w-full border-b transition-all duration-300",
         scrolled
-          ? "border-b border-border/50 bg-background/80 backdrop-blur-xl shadow-sm"
-          : "bg-transparent"
+          ? "border-border/50 bg-background/80 backdrop-blur-xl shadow-sm"
+          : "border-transparent bg-transparent"
       )}
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
