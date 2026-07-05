@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
   },
   // Disable Next.js dev indicator overlay
   devIndicators: false,
+  // Force Vercel to bundle the PDF.js worker file in serverless packages
+  outputFileTracingIncludes: {
+    "/api/upload": ["node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+    "/api/vendors/[id]/process": ["node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+  },
 };
 
 export default nextConfig;
